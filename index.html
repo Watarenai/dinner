@@ -72,22 +72,25 @@
     <div class="reel" id="reel1"><ul></ul></div>
     <div class="reel" id="reel2"><ul></ul></div>
     <div class="reel" id="reel3"><ul></ul></div>
+    <div class="reel" id="reel4"><ul></ul></div>
   </div>
   <div class="buttons">
-    <button id="stop1">ストップ1</button>
-    <button id="stop2">ストップ2</button>
-    <button id="stop3">ストップ3</button>
+    <button id="stop1">野菜</button>
+    <button id="stop2">野菜</button>
+    <button id="stop3">野菜</button>
+    <button id="stop4">肉</button>
     <button id="stopAll">一斉ストップ</button>
     <button id="reset">リセット</button>
   </div>
   <div id="result"></div>
   <audio id="slot-sound" src="slot-sound.mp3" preload="auto"></audio>
   <script>
-    const ingredients=[
+    const vegIngredients=[
       'だいこん','にんじん','じゃがいも','たまねぎ','キャベツ','レタス',
       'ほうれんそう','こまつな','なす','きゅうり','トマト','ピーマン',
       'さつまいも','ねぎ','しそ','ごぼう','とうもろこし','かぼちゃ','ブロッコリー'
     ];
+    const meatIngredients=['牛肉','鶏肉','豚肉'];
     function shuffle(arr){
       for(let i=arr.length-1;i>0;i--){
         const j=Math.floor(Math.random()*(i+1));
@@ -100,22 +103,26 @@
     const reels=[
       document.querySelector('#reel1 ul'),
       document.querySelector('#reel2 ul'),
-      document.querySelector('#reel3 ul')
+      document.querySelector('#reel3 ul'),
+      document.querySelector('#reel4 ul')
     ];
-    let intervals=[null,null,null];
-    reels.forEach(ul=>{
-      const order=shuffle([...ingredients]);
+    const data=[vegIngredients,vegIngredients,vegIngredients,meatIngredients];
+    let intervals=[null,null,null,null];
+    reels.forEach((ul,i)=>{
+      const order=shuffle([...data[i]]);
       const full=[...order,...order];
       full.forEach(item=>{const li=document.createElement('li');li.textContent=item;ul.appendChild(li);});
     });
     function spinReel(i){
       if(intervals[i])return;
+      const step=Math.floor(Math.random()*11)+5;
+      const delay=Math.floor(Math.random()*41)+20;
       intervals[i]=setInterval(()=>{
         let top=parseInt(reels[i].style.top)||0;
-        top-=10;
+        top-=step;
         if(Math.abs(top)>=reels[i].scrollHeight/2)top=0;
         reels[i].style.top=top+'px';
-      },30);
+      },delay);
       if(sound.paused) sound.play();
     }
     function stopReel(i){
@@ -136,17 +143,18 @@
         document.getElementById('result').textContent='選ばれた食材: '+results.join('、');
       }
     }
-    function stopAll(){[0,1,2].forEach(i=>stopReel(i));}
+    function stopAll(){[0,1,2,3].forEach(i=>stopReel(i));}
     function resetReels(){
       intervals.forEach((int,i)=>{if(int) clearInterval(int);intervals[i]=null;reels[i].style.top='0px';});
       document.getElementById('result').textContent='';
       sound.currentTime=0;
-      spinReel(0);spinReel(1);spinReel(2);
+      spinReel(0);spinReel(1);spinReel(2);spinReel(3);
     }
     reels.forEach((_,i)=>spinReel(i));
     document.getElementById('stop1').addEventListener('click',()=>stopReel(0));
     document.getElementById('stop2').addEventListener('click',()=>stopReel(1));
     document.getElementById('stop3').addEventListener('click',()=>stopReel(2));
+    document.getElementById('stop4').addEventListener('click',()=>stopReel(3));
     document.getElementById('stopAll').addEventListener('click',stopAll);
     document.getElementById('reset').addEventListener('click',resetReels);
   </script>
