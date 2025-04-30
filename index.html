@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>食材スロットプロトタイプ</title>
+  <style>
+    body{
+      font-family:sans-serif;
+      background:#f9f9f9;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding:20px;
+    }
+    .slot-container{
+      display:flex;
+      gap:10px;
+      margin-bottom:20px;
+    }
+    .reel{
+      width:100px;
+      height:100px;
+      overflow:hidden;
+      border:2px solid #333;
+      border-radius:8px;
+      background:#fff;
+      position:relative;
+    }
+    .reel ul{
+      list-style:none;
+      padding:0;
+      margin:0;
+      position:absolute;
+      top:0;
+      transition:top .1s ease-out;
+    }
+    .reel li{
+      width:100px;
+      height:100px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:14px;
+    }
+    .buttons{
+      display:flex;
+      gap:10px;
+      margin-bottom:20px;
+    }
+    button{
+      padding:8px 12px;
+      border:none;
+      border-radius:4px;
+      background:#ff9800;
+      color:#fff;
+      cursor:pointer;
+      box-shadow:0 2px 4px rgba(0,0,0,.2);
+    }
+    button:active{
+      transform:scale(.98);
+    }
+    #result{
+      font-size:18px;
+      margin-top:10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>食材スロット</h1>
+  <div class="slot-container">
+    <div class="reel" id="reel1"><ul></ul></div>
+    <div class="reel" id="reel2"><ul></ul></div>
+    <div class="reel" id="reel3"><ul></ul></div>
+  </div>
+  <div class="buttons">
+    <button id="stop1">ストップ1</button>
+    <button id="stop2">ストップ2</button>
+    <button id="stop3">ストップ3</button>
+    <button id="stopAll">一斉ストップ</button>
+    <button id="reset">リセット</button>
+  </div>
+  <div id="result"></div>
+  <audio id="slot-sound" src="slot-sound.mp3" preload="auto"></audio>
+  <script>
+    const ingredients=[
+      'だいこん','にんじん','じゃがいも','たまねぎ','キャベツ','レタス',
+      'ほうれんそう','こまつな','なす','きゅうり','トマト','ピーマン',
+      'さつまいも','ねぎ','しそ','ごぼう','とうもろこし','かぼちゃ','ブロッコリー'
+    ];
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [arr[i],arr[j]]=[arr[j],arr[i]];
+      }
+      return arr;
+    }
+    const sound=document.getElementById('slot-sound');
+    sound.loop=true;
+    const reels=[
+      document.querySelector('#reel1 ul'),
+      document.querySelector('#reel2 ul'),
+      document.querySelector('#reel3 ul')
+    ];
+    let intervals=[null,null,null];
+    reels.forEach(ul=>{
+      const order=shuffle([...ingredients]);
+      const full=[...order,...order];
+      full.forEach(item=>{const li=document.createElement('li');li.textContent=item;ul.appendChild(li);});
+    });
+    function spinReel(i){
+      if(intervals[i])return;
+      intervals[i]=setInterval(()=>{
+        let top=parseInt(reels[i].style.top)||0;
+        top-=10;
+        if(Math.abs(top)>=reels[i].scrollHeight/2)top=0;
+        reels[i].style.top=top+'px';
+      },30);
+      if(sound.paused) sound.play();
+    }
+    function stopReel(i){
+      if(!intervals[i])return;
+      clearInterval(intervals[i]);
+      intervals[i]=null;
+      const ul=reels[i];
+      const total=ul.scrollHeight/2;
+      const curr=Math.abs(parseInt(ul.style.top)||0)%total;
+      const idx=Math.round(curr/100);
+      ul.style.top=-idx*100+'px';
+      if(intervals.every(x=>x===null)){
+        sound.pause();sound.currentTime=0;
+        const results=reels.map(ul=>{
+          const pos=Math.abs(parseInt(ul.style.top)||0)/100;
+          return ul.children[pos].textContent;
+        });
+        document.getElementById('result').textContent='選ばれた食材: '+results.join('、');
+      }
+    }
+    function stopAll(){[0,1,2].forEach(i=>stopReel(i));}
+    function resetReels(){
+      intervals.forEach((int,i)=>{if(int) clearInterval(int);intervals[i]=null;reels[i].style.top='0px';});
+      document.getElementById('result').textContent='';
+      sound.currentTime=0;
+      spinReel(0);spinReel(1);spinReel(2);
+    }
+    reels.forEach((_,i)=>spinReel(i));
+    document.getElementById('stop1').addEventListener('click',()=>stopReel(0));
+    document.getElementById('stop2').addEventListener('click',()=>stopReel(1));
+    document.getElementById('stop3').addEventListener('click',()=>stopReel(2));
+    document.getElementById('stopAll').addEventListener('click',stopAll);
+    document.getElementById('reset').addEventListener('click',resetReels);
+  </script>
+</body>
+</html>
