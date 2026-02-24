@@ -12,12 +12,14 @@
 
 ```
 dinner/
-├── index.html                 # メインアプリケーション（現行版）
-├── slot_app_prototype.html    # 旧プロトタイプ（3リール版）
+├── index.html                 # メインアプリケーション（GitHub Pagesで配信）
 ├── slot-sound.mp3             # スロット回転時の効果音
 ├── CLAUDE.md                  # 本ファイル（AI向け開発ガイド）
-└── docs/                      # ドキュメント類
-    └── requirements.md        # 要件定義書
+├── docs/                      # ドキュメント類
+│   ├── requirements.md        # 要件定義書
+│   └── development-plan.md    # 開発計画書
+└── archive/                   # 旧バージョン・参考資料
+    └── slot_app_prototype.html  # 旧プロトタイプ（3リール版）
 ```
 
 ## 技術スタック
